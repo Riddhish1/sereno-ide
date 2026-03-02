@@ -9,6 +9,7 @@ import { Poppins } from "next/font/google";
 import { formatDistanceToNow } from "date-fns";
 
 import { TenantBadge } from "@/components/tenant-badge";
+import { PolicyStatusPill } from "@/components/policy-status-pill";
 
 import {
   Tooltip,
@@ -141,7 +142,7 @@ export const Navbar = ({
             </TooltipTrigger>
             <TooltipContent>
               Saved{" "}
-              {project?.updatedAt 
+              {project?.updatedAt
                 ? formatDistanceToNow(
                   project.updatedAt,
                   { addSuffix: true, }
@@ -152,6 +153,7 @@ export const Navbar = ({
         )}
       </div>
       <div className="flex items-center gap-2">
+        <PolicyStatusPill />
         <TenantBadge />
         <UserButton />
       </div>

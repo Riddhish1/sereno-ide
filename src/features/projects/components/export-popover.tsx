@@ -8,8 +8,12 @@ import { FaGithub } from "react-icons/fa";
 import {
   CheckCheckIcon,
   CheckCircle2Icon,
+  ClockIcon,
+  DatabaseIcon,
   ExternalLinkIcon,
   LoaderIcon,
+  ServerIcon,
+  ShieldCheckIcon,
   XCircleIcon,
 } from "lucide-react";
 
@@ -60,6 +64,10 @@ export const ExportPopover = ({ projectId }: ExportPopoverProps) => {
   const exportStatus = project?.exportStatus;
   const exportRepoUrl = project?.exportRepoUrl;
 
+  const [showApprovalGate, setShowApprovalGate] = React.useState(false);
+  const [isRequestingApproval, setIsRequestingApproval] = React.useState(false);
+  const [pendingFormValues, setPendingFormValues] = React.useState<{ repoName: string; visibility: "public" | "private"; description: string; } | null>(null);
+
   const form = useForm({
     defaultValues: {
       repoName: project?.name?.replace(/[^a-zA-Z0-9._-]/g, "-") ?? "",
@@ -70,47 +78,64 @@ export const ExportPopover = ({ projectId }: ExportPopoverProps) => {
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      try {
-        await ky
-          .post("/api/github/export", {
-            json: {
-              projectId,
-              repoName: value.repoName,
-              visibility: value.visibility,
-              description: value.description || undefined,
-            },
-          })
-
-        toast.success("Export started...");
-      } catch (error) {
-        if (error instanceof HTTPError) {
-          const body = await error.response.json<{ error: string }>();
-          if (body.error?.includes("Pro plan required")) {
-            toast.error("Upgrade to import repositories", {
-              action: {
-                label: "Upgrade",
-                onClick: () => openUserProfile(),
-              },
-            });
-            setOpen(false);
-            return;
-          }
-
-          if (body.error?.includes("GitHub not connected")) {
-            toast.error("GitHub account not connected", {
-              action: {
-                label: "Connect",
-                onClick: () => openUserProfile(),
-              },
-            });
-            setOpen(false);
-            return;
-          }
-        }
-        toast.error("Unable to export repository");
-      }
+      setPendingFormValues({
+        repoName: value.repoName,
+        visibility: value.visibility,
+        description: value.description || "",
+      });
+      setShowApprovalGate(true);
     },
   });
+
+  const handleRequestApproval = async () => {
+    if (!pendingFormValues) return;
+    setIsRequestingApproval(true);
+    try {
+      await ky
+        .post("/api/github/export", {
+          json: {
+            projectId,
+            repoName: pendingFormValues.repoName,
+            visibility: pendingFormValues.visibility,
+            description: pendingFormValues.description || undefined,
+          },
+        })
+
+      toast.success("Approval requested & export started...");
+      setShowApprovalGate(false);
+      setPendingFormValues(null);
+    } catch (error) {
+      if (error instanceof HTTPError) {
+        const body = await error.response.json<{ error: string }>();
+        if (body.error?.includes("Pro plan required")) {
+          toast.error("Upgrade to import repositories", {
+            action: {
+              label: "Upgrade",
+              onClick: () => openUserProfile(),
+            },
+          });
+          setOpen(false);
+          setIsRequestingApproval(false);
+          return;
+        }
+
+        if (body.error?.includes("GitHub not connected")) {
+          toast.error("GitHub account not connected", {
+            action: {
+              label: "Connect",
+              onClick: () => openUserProfile(),
+            },
+          });
+          setOpen(false);
+          setIsRequestingApproval(false);
+          return;
+        }
+      }
+      toast.error("Unable to export repository");
+    } finally {
+      setIsRequestingApproval(false);
+    }
+  };
 
   const handleCancelExport = async () => {
     await ky.post("/api/github/export/cancel", {
@@ -126,6 +151,63 @@ export const ExportPopover = ({ projectId }: ExportPopoverProps) => {
   };
 
   const renderContent = () => {
+    if (showApprovalGate) {
+      return (
+        <div className="flex flex-col gap-4">
+          <div className="space-y-1">
+            <h4 className="font-medium text-sm">Approval Gate</h4>
+            <p className="text-xs text-muted-foreground">
+              Required approvals before generating infrastructure and PR.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-500/10 p-2 rounded-md border border-amber-500/20">
+              <ClockIcon className="size-4 shrink-0" />
+              <span>SLA Timer: <strong>48 Hours</strong></span>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Required Approvers
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2 text-sm">
+                  <ShieldCheckIcon className="size-4 text-emerald-500" />
+                  <span>Security Team</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <ServerIcon className="size-4 text-emerald-500" />
+                  <span>Infra Team</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <DatabaseIcon className="size-4 text-emerald-500" />
+                  <span>Data Owner</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2 mt-2">
+            <Button
+              size="sm"
+              className="w-full"
+              disabled={isRequestingApproval}
+              onClick={handleRequestApproval}
+            >
+              {isRequestingApproval ? "Requesting..." : "Request Approval"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              disabled={isRequestingApproval}
+              onClick={() => setShowApprovalGate(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
     if (exportStatus === "exporting") {
       return (
         <div className="flex flex-col items-center gap-3">
@@ -253,7 +335,7 @@ export const ExportPopover = ({ projectId }: ExportPopoverProps) => {
                       <SelectItem value="public">Public</SelectItem>
                     </SelectContent>
                   </Select>
-            
+
                 </Field>
               );
             }}

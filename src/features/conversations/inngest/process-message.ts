@@ -5,8 +5,8 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { NonRetriableError } from "inngest";
 import { convex } from "@/lib/convex-client";
 import { api } from "../../../../convex/_generated/api";
-import { 
-  CODING_AGENT_SYSTEM_PROMPT, 
+import {
+  CODING_AGENT_SYSTEM_PROMPT,
   TITLE_GENERATOR_SYSTEM_PROMPT
 } from "./constants";
 import { DEFAULT_CONVERSATION_TITLE } from "../constants";
@@ -56,14 +56,14 @@ export const processMessage = inngest.createFunction(
     event: "message/sent",
   },
   async ({ event, step }) => {
-    const { 
-      messageId, 
+    const {
+      messageId,
       conversationId,
       projectId,
       message
     } = event.data as MessageEvent;
 
-    const internalKey = process.env.SERENOIDE_CONVEX_INTERNAL_KEY; 
+    const internalKey = process.env.SERENOIDE_CONVEX_INTERNAL_KEY;
 
     if (!internalKey) {
       throw new NonRetriableError("SERENOIDE_CONVEX_INTERNAL_KEY is not configured");
@@ -114,22 +114,22 @@ export const processMessage = inngest.createFunction(
       conversation.title === DEFAULT_CONVERSATION_TITLE;
 
     if (shouldGenerateTitle) {
-       const titleAgent = createAgent({
+      const titleAgent = createAgent({
         name: "title-generator",
         system: TITLE_GENERATOR_SYSTEM_PROMPT,
         model: gemini({
           model: "gemini-2.5-flash",
         }),
-       });
+      });
 
-       const { output } = await titleAgent.run(message, { step });
+      const { output } = await titleAgent.run(message, { step });
 
-       const textMessage = output.find(
+      const textMessage = output.find(
         (m) => m.type === "text" && m.role === "assistant"
       );
 
       if (textMessage?.type === "text") {
-         const title = 
+        const title =
           typeof textMessage.content === "string"
             ? textMessage.content.trim()
             : textMessage.content
@@ -154,10 +154,10 @@ export const processMessage = inngest.createFunction(
       name: "Sereno-IDE",
       description: "An expert AI coding assistant",
       system: systemPrompt,
-       model: gemini({
+      model: gemini({
         model: "gemini-2.5-flash",
-       }),
-       tools: [
+      }),
+      tools: [
         createListFilesTool({ internalKey, projectId }),
         createReadFilesTool({ internalKey }),
         createUpdateFileTool({ internalKey }),
@@ -166,14 +166,14 @@ export const processMessage = inngest.createFunction(
         createRenameFileTool({ internalKey }),
         createDeleteFilesTool({ internalKey }),
         createScrapeUrlsTool(),
-       ],
+      ],
     });
 
     // Create network with single agent
     const network = createNetwork({
       name: "SerenoIDE-network",
       agents: [codingAgent],
-      maxIter: 20,
+      maxIter: 3,
       router: ({ network }) => {
         const lastResult = network.state.results.at(-1);
         const hasTextResponse = lastResult?.output.some(
