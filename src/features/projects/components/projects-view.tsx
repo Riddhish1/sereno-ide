@@ -14,6 +14,8 @@ import { ProjectsList } from "./projects-list";
 import { ProjectsCommandDialog } from "./projects-command-dialog";
 import { ImportGithubDialog } from "./import-github-dialog";
 import { NewProjectDialog } from "./new-project-dialog";
+import { PolicyInbox } from "./policy-inbox";
+import { TenantBadge } from "@/components/tenant-badge";
 
 const font = Poppins({
   subsets: ["latin"],
@@ -81,6 +83,10 @@ export const ProjectsView = () => {
 
           </div>
 
+          <div className="w-full">
+            <TenantBadge />
+          </div>
+
           <div className="flex flex-col gap-4 w-full">
             <div className="grid grid-cols-2 gap-2">
               <Button
@@ -120,6 +126,8 @@ export const ProjectsView = () => {
             </div>
 
             <ProjectsList onViewAll={() => setCommandDialogOpen(true)} />
+
+            <PolicyInbox />
 
           </div>
 

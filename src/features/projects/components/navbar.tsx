@@ -8,6 +8,8 @@ import { UserButton } from "@clerk/nextjs";
 import { Poppins } from "next/font/google";
 import { formatDistanceToNow } from "date-fns";
 
+import { TenantBadge } from "@/components/tenant-badge";
+
 import {
   Tooltip,
   TooltipContent,
@@ -150,6 +152,7 @@ export const Navbar = ({
         )}
       </div>
       <div className="flex items-center gap-2">
+        <TenantBadge />
         <UserButton />
       </div>
     </nav>
