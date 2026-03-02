@@ -4,6 +4,7 @@ import { Poppins } from "next/font/google";
 import { SparkleIcon } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 import { useEffect, useState } from "react";
+import { UserButton } from "@clerk/nextjs";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,8 @@ export const ProjectsView = () => {
                 SerenoIDE
               </h1>
             </div>
+
+            <UserButton />
 
           </div>
 
