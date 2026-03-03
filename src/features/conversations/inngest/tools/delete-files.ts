@@ -61,7 +61,7 @@ export const createDeleteFilesTool = ({
       }
 
       try {
-        return await toolStep?.run("delete-files", async () => {
+        return await toolStep?.run(`delete-files-${fileIds.join("-")}`, async () => {
           const results: string[] = [];
 
           for (const file of filesToDelete) {

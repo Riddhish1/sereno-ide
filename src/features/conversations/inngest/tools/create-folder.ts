@@ -40,7 +40,7 @@ export const createCreateFolderTool = ({
       const { name, parentId } = parsed.data;
 
       try {
-        return await toolStep?.run("create-folder", async () => {
+        return await toolStep?.run(`create-folder-${name}-${parentId || "root"}`, async () => {
           // Validate parentId if provided
           if (parentId) {
             try {

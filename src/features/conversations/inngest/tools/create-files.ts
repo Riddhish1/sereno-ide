@@ -55,7 +55,7 @@ export const createCreateFilesTool = ({
       const { parentId, files } = parsed.data;
 
       try {
-        return await toolStep?.run("create-files", async () => {
+        return await toolStep?.run(`create-files-${parentId || "root"}-${files.map(f => f.name).join("-")}`, async () => {
           let resolvedParentId: Id<"files"> | undefined;
 
           if (parentId && parentId !== "") {

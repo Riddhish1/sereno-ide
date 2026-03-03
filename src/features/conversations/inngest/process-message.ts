@@ -118,7 +118,7 @@ export const processMessage = inngest.createFunction(
         name: "title-generator",
         system: TITLE_GENERATOR_SYSTEM_PROMPT,
         model: gemini({
-          model: "gemini-2.0-flash",
+          model: "gemini-2.5-flash",
         }),
       });
 
@@ -155,7 +155,7 @@ export const processMessage = inngest.createFunction(
       description: "An expert AI coding assistant",
       system: systemPrompt,
       model: gemini({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
       }),
       tools: [
         createListFilesTool({ internalKey, projectId }),
@@ -173,22 +173,20 @@ export const processMessage = inngest.createFunction(
     const network = createNetwork({
       name: "SerenoIDE-network",
       agents: [codingAgent],
-      maxIter: 3,
+      maxIter: 15,
       router: ({ network }) => {
         const lastResult = network.state.results.at(-1);
-        const hasTextResponse = lastResult?.output.some(
-          (m) => m.type === "text" && m.role === "assistant"
-        );
-        const hasToolCalls = lastResult?.output.some(
+        if (!lastResult) return codingAgent;
+
+        const hasToolCalls = lastResult.output.some(
           (m) => m.type === "tool_call"
         );
 
-        // Gemini outputs text AND tool calls together
-        // Only stop if there's text WITHOUT tool calls (final response)
-        if (hasTextResponse && !hasToolCalls) {
-          return undefined;
-        }
-        return codingAgent;
+        // Keep running while the agent is calling tools.
+        // Stop only when it produces a pure text response (no tool calls) —
+        // that is the final summary.
+        if (hasToolCalls) return codingAgent;
+        return undefined;
       }
     });
 

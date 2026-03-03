@@ -49,7 +49,7 @@ export const createUpdateFileTool = ({
       }
 
       try {
-        return await toolStep?.run("update-file", async () => {
+        return await toolStep?.run(`update-file-${fileId}`, async () => {
           await convex.mutation(api.system.updateFile, {
             internalKey,
             fileId: fileId as Id<"files">,

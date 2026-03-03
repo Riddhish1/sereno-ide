@@ -32,7 +32,7 @@ export const createReadFilesTool = ({ internalKey }: ReadFilesToolOptions) => {
       const { fileIds } = parsed.data;
 
       try {
-        return await toolStep?.run("read-files", async () => {
+        return await toolStep?.run(`read-files-${fileIds.join("-")}`, async () => {
           const results: { id: string; name: string; content: string }[] = [];
 
           for (const fileId of fileIds) {

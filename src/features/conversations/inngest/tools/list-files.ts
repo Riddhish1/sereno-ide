@@ -24,7 +24,7 @@ export const createListFilesTool = ({
     }),
     handler: async (_, { step: toolStep }) => {
       try {
-        return await toolStep?.run("list-files", async () => {
+        return await toolStep?.run(`list-files-${Date.now()}`, async () => {
           const files = await convex.query(api.system.getProjectFiles, {
             internalKey,
             projectId,
