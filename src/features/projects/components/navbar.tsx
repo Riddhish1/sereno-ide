@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 
 import { TenantBadge } from "@/components/tenant-badge";
 import { PolicyStatusPill } from "@/components/policy-status-pill";
+import { ApprovalGate } from "@/components/approval-gate";
 
 import {
   Tooltip,
@@ -154,6 +155,7 @@ export const Navbar = ({
       </div>
       <div className="flex items-center gap-2">
         <PolicyStatusPill />
+        <ApprovalGate />
         <TenantBadge />
         <UserButton />
       </div>

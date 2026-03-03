@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { usePolicyState } from "@/hooks/use-policy-state";
 
 type Enforcement = "IaC" | "Runtime" | "API" | "Policy";
 type Severity = "critical" | "high" | "medium" | "low";
@@ -50,6 +51,7 @@ export const PolicyInbox = () => {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ParsedPolicy | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { savePolicy } = usePolicyState();
 
   const processFile = useCallback(async (file: File) => {
     if (!file.name.toLowerCase().endsWith(".pdf")) {
@@ -77,6 +79,7 @@ export const PolicyInbox = () => {
 
       const data: ParsedPolicy = await res.json();
       setResult(data);
+      savePolicy(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -206,11 +209,11 @@ export const PolicyInbox = () => {
                   </span>
                 </div>
 
-                <p className="text-xs text-muted-foreground pl-[18px] leading-relaxed">
+                <p className="text-xs text-muted-foreground pl-4.5 leading-relaxed">
                   {c.description}
                 </p>
 
-                <div className="flex items-center gap-1.5 pl-[18px]">
+                <div className="flex items-center gap-1.5 pl-4.5">
                   <span
                     className={cn(
                       "text-[10px] px-1.5 py-0.5 rounded-full border font-medium",

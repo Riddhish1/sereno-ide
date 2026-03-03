@@ -118,7 +118,7 @@ export const processMessage = inngest.createFunction(
         name: "title-generator",
         system: TITLE_GENERATOR_SYSTEM_PROMPT,
         model: gemini({
-          model: "gemini-2.5-flash",
+          model: "gemini-2.0-flash",
         }),
       });
 
@@ -155,7 +155,7 @@ export const processMessage = inngest.createFunction(
       description: "An expert AI coding assistant",
       system: systemPrompt,
       model: gemini({
-        model: "gemini-2.5-flash",
+        model: "gemini-2.0-flash",
       }),
       tools: [
         createListFilesTool({ internalKey, projectId }),
